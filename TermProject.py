@@ -12,11 +12,11 @@ from wordcloud import WordCloud
 
 DEPLOY = True
 st.set_page_config(
-        page_title="Baby Names Demo",
-        page_icon="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/twitter/282/books_1f4da.png",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
+    page_title="Baby Names Demo",
+    page_icon="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/twitter/282/books_1f4da.png",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 # 讀進 csv 檔案
 # construct csv file
