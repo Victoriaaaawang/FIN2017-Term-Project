@@ -1,5 +1,4 @@
 from os import times
-from sqlalchemy import false
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -10,9 +9,8 @@ import plotly.graph_objs as go
 import plotly.io as pio
 import glob
 from wordcloud import WordCloud
-from io import BytesIO
 
-DEPLOY = False
+DEPLOY = True
 
 # 讀進 csv 檔案
 # construct csv file
