@@ -16,6 +16,7 @@ DEPLOY = True
 # construct csv file
 
 
+@st.cache(allow_output_mutation=True)
 def construct_csv(path='./Data', deploy=False):
     if deploy:
         all_files = glob.glob(path + r"/*.TXT")
