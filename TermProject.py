@@ -10,9 +10,9 @@ import plotly.io as pio
 import glob
 from wordcloud import WordCloud
 
-DEPLOY = True
+DEPLOY = False
 st.set_page_config(
-    page_title="Baby Names Demo",
+    page_title="US Baby Names Dashboard",
     page_icon="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/twitter/282/books_1f4da.png",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -262,7 +262,7 @@ def main():
     state_lst = sorted(list(df.State.unique()))
 
     st.write('# US Baby Names Dashboard 👶')
-    st.caption('This is the baby birth names of United States from 1910 to 2021.')
+    st.caption('This is USA state-specific data on the relative frequency of given names in the population of U.S. births where the individual has a Social Security Number (Tabulated based on Social Security records as of March 7, 2021)')
 
     ### Setting Block ###
 
@@ -281,24 +281,13 @@ def main():
         1910, 2020, (1910, 2020), step=1)
     ### End of Setting Block ###
 
-    # st.write(df.head())
-
     st.markdown("***")
 
     # SECTION 1: Popular Names
     st.subheader('Popular Names from Selected Years', anchor=None)
-    # st.write(f"""States Selected: {states}""")
 
     top = st.number_input('Top # Names', min_value=1,
                           max_value=50, value=10, step=1)
-
-    # col121 是為了讓 range 不要 overlap 到 col12
-    # col11, col121, col12 = st.columns((5, 0.2, 5))
-    # with col11:
-    #     pass
-    #     # year = st.number_input('Popular Names Since ... Year',
-    #     #                        min_value=1910, max_value=2021, value=1910, step=1)
-    # with col12:
 
     col21, col22 = st.columns((5, 5))
 
