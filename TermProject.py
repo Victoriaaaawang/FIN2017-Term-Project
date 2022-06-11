@@ -1,12 +1,9 @@
-from os import times
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 import numpy as np
-import plotly.offline as py
 import plotly.graph_objs as go
-import plotly.io as pio
 import glob
 from wordcloud import WordCloud
 
@@ -301,7 +298,7 @@ def main():
     with col21:
         st.pyplot(nm_fig)
     with col22:
-        st.write("#### DF")
+        st.write("Data Table for selected NNames")
         nm_df = nm_df[['Name', 'F', 'M', 'Total']].reset_index(drop=True)
         nm_df[['F', 'M', 'Total']] = nm_df[['F', 'M', 'Total']].astype(int)
         nm_df.columns = ['Name', 'Girl', 'Boy', 'Total Occurrences']
