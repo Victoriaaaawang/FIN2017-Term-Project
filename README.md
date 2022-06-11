@@ -5,7 +5,8 @@
 ### System Requirements
 
 + [`Python 3.7`](https://www.python.org/downloads/) or above
-+ C++ Compiler for running WordCloud successfully
++ C++ Compiler in order to run WordCloud successfully
++ Tested on macOS 12.3.1 (macOS Monetary)
 
 ### (Recommended) Virtual Environment 
 
@@ -16,6 +17,7 @@ pip install pipenv
 pipenv install
 pipenv shell
 ```
+### Package Requirements
 
 Then run the following command to install the required packages for this project:
 
