@@ -10,7 +10,8 @@ import plotly.io as pio
 import glob
 from wordcloud import WordCloud
 
-DEPLOY = False
+DEPLOY = True
+
 st.set_page_config(
     page_title="US Baby Names Dashboard",
     page_icon="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/twitter/282/books_1f4da.png",
@@ -18,13 +19,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 讀進 csv 檔案
-# construct csv file
-
 
 @st.cache(allow_output_mutation=True)
 def construct_csv(path='./Data', deploy=False):
-    if deploy:
+    # construct csv file
+
+    if 'RUN_TIME' not in st.session_state:
+        st.session_state['RUN_TIME'] = 0  # set RUN_TIME to zero initially
+
+    # run this if RUN_TIME is zero
+    if deploy and (not st.session_state['RUN_TIME']):
         all_files = glob.glob(path + r"/*.TXT")
         li = []  # 建立一個空的 list
         for filename in all_files:
@@ -39,7 +43,10 @@ def construct_csv(path='./Data', deploy=False):
         # write out the data to a csv file
         all_df.to_csv(path + '/all_states.csv', index=False)
 
-    # 讀進 csv 檔案
+        # set RUN_TIME to 1 to avoid re-running the code
+        st.session_state['RUN_TIME'] = 1
+
+    # Read in the csv file
     new_df = pd.read_csv(path + '/all_states.csv')
 
     return new_df
@@ -49,7 +56,7 @@ df = construct_csv(deploy=DEPLOY)
 
 
 def most_popular_since(year, top: int = 10, states=[]):
-    # 先搞定 states 變數
+    # 選定最上面有選擇的 statesz``
     region_df = df[df.State.isin(states)]
 
     gender_df = region_df[(region_df['Year'] >= year[0]) & (region_df['Year'] <= year[1])].groupby(['Gender', 'Name']).agg(
@@ -67,7 +74,7 @@ def most_popular_since(year, top: int = 10, states=[]):
                    title=f'Top {top} Popular Girl Names between {year}')
     fig_F.update_traces(marker_color="#FF66B2")
 
-    # 這個為了美觀留著
+    # Keep for thelayout
     fig_F.update_layout(
         margin=dict(l=0, r=0, t=40, b=40),
     )
@@ -76,7 +83,8 @@ def most_popular_since(year, top: int = 10, states=[]):
     fig_M = px.bar(top_10_M, x='Name', y='No. of Occurrences',
                    title=f'Top {top} Popular Boy Names between {year}')
     fig_M.update_traces(marker_color="#3399FF")
-    # 這個為了美觀留著
+
+    # Keep for thelayout
     fig_M.update_layout(
         margin=dict(l=0, r=0, t=40, b=40),
     )
@@ -85,7 +93,6 @@ def most_popular_since(year, top: int = 10, states=[]):
 
 
 # Plot for "Map"
-# TODO: 註解稍後再加上去
 def create_choromap(df, name, gender, begin_year, end_year):
     gen = 'F' if gender == 'female' else 'M'
     df_name_state = df[(df['Name'] == name) & (df['Gender'] == gen)]
@@ -152,7 +159,7 @@ def create_choromap(df, name, gender, begin_year, end_year):
 
 
 def create_graph_time(df, name, color='rgb(255, 153, 204)', year_range=[1910, 2020]):
-    # region_df = df[df.State.isin(states)]
+
     df_year_pad = pd.DataFrame(
         np.unique(df['Year'])).rename(columns={0: 'Year'})
     df_name = pd.DataFrame(df[df['Name'] == name].groupby('Year')[
@@ -225,34 +232,17 @@ def neutral_name(year=[1910, 2020], color_most="#FFCC00", color_least="#FFCC00",
     final_df = gender_df[gender_df['diff_pct'] <= 0.1]
     final_df['Total'] = final_df['F'] + final_df['M']
 
+    # 生成 wordcloud
     d = {}
     for a, x in final_df[['Name', 'Total']].values:
         d[a] = x
     wordcloud = WordCloud(background_color='white', width=1600, height=800)
     wordcloud.generate_from_frequencies(frequencies=d)
 
-    # fig = plt.figure(figsize=(16, 8), facecolor=None)
     fig, ax = plt.subplots(figsize=(12, 4))
     plt.imshow(wordcloud, interpolation="bilinear")
     plt.axis("off")
     return fig, final_df
-
-    # df_pre = region_df[region_df['Year'] == year[0]].groupby('Name').agg(
-    #     {'No. of Occurrences': 'sum'}).reset_index().sort_values(by='Name')
-
-    # df_post = region_df[region_df.Year == year[1]].groupby('Name').agg(  # 嘗試不同寫法
-    #     {'No. of Occurrences': 'sum'}).reset_index().sort_values(by='Name')
-    # new_df = pd.merge(df_pre, df_post, on='Name', how='outer').rename(
-    #     columns={'No. of Occurrences_x': 'count_pre', 'No. of Occurrences_y': 'count_post'})
-    # new_df = new_df.fillna(0)
-
-    # new_df['diff'] = new_df['count_post'] - new_df['count_pre']
-    # new_df['pct_diff'] = new_df['diff'] / new_df['count_pre']
-
-    # most_diff_name = new_df[new_df['diff'] ==
-    #                         new_df['diff'].max()].Name.values[0]
-    # least_diff_name = new_df[new_df['diff'] ==
-    #                          new_df['diff'].min()].Name.values[0]
 
 
 def main():
@@ -283,7 +273,7 @@ def main():
 
     st.markdown("***")
 
-    # SECTION 1: Popular Names
+    ### SECTION 1: Popular Names ###
     st.subheader('Popular Names from Selected Years', anchor=None)
 
     top = st.number_input('Top # Names', min_value=1,
@@ -298,19 +288,16 @@ def main():
     with col22:
         st.plotly_chart(fig_M, use_container_width=True)
 
-    # SECTION 2: Neutral name
+    ### SECTION 2: Neutral name ###
 
     # Plot: Neutral Name Word Cloud
     # Plot: Trend
-
     st.markdown("***")
-    st.subheader('Netural Names', anchor=None)
+    st.subheader('Gender Neutral Names', anchor=None)
 
     col21, _, col22 = st.columns((7, 0.5, 3))
     nm_fig, nm_df = neutral_name(year=year, states=states)
-    # buf = BytesIO()
-    # nm_fig.savefig(buf, format="png")
-    # st.image(buf)
+
     with col21:
         st.pyplot(nm_fig)
     with col22:
@@ -319,15 +306,12 @@ def main():
         nm_df[['F', 'M', 'Total']] = nm_df[['F', 'M', 'Total']].astype(int)
         nm_df.columns = ['Name', 'Girl', 'Boy', 'Total Occurrences']
         st.write(nm_df)
-    # Plot: Historical Trends of Neutral Names
-    # chart_data = pd.DataFrame(np.random.randn(20), columns=['a'])
-    # st.caption('Naming Trend for Netural Names', unsafe_allow_html=False)
-    # st.line_chart(chart_data)
 
-    # SECTION 3: Largest Increase and Decrease (Most Popular and Unpopular Names)
+    ### SECTION 3: Largest Increase and Decrease (Most Popular and Unpopular Names) ###
     # larget decrease and increase from selected period
     st.markdown("***")
-    st.subheader('Trends: Most Popular and Unpopular Names', anchor=None)
+    st.subheader(
+        'Baby Name with Biggest Increase and Decrease by the selected period of time', anchor=None)
 
     fig_most_diff_name, fig_least_diff_name, most_diff_name, least_diff_name = name_diff_plot(
         year=year, color_most="#FFCC00", color_least="#FFCC00", states=states)
@@ -339,16 +323,16 @@ def main():
         st.write(f"#### Least Popular Name {least_diff_name}")
         st.plotly_chart(fig_least_diff_name, use_container_width=True)
 
-    # SECTION 4: Baby Naming Trends for Specific Names
+    ### SECTION 4: Baby Naming Trends for Specific Names ###
     st.markdown("***")
-    st.subheader('Baby Naming Trends for Specific Names', anchor=None)
+    st.subheader('Baby Naming Trends by time and states', anchor=None)
 
-    # TODO: Name Trend
     region_df = df[df.State.isin(states)]
 
     col411, _, col412 = st.columns((5, 0.2, 5))
     with col411:
-        input_name = st.text_input('Enter a name:', value='Victoria')
+        input_name = st.text_input(
+            'Enter a name in English:', value='Victoria')
 
     with col412:
         gender = st.radio(
@@ -370,8 +354,6 @@ def main():
         )
         st.plotly_chart(specific_name_fig, use_container_width=True)
     with col42:
-        # TODO: Map plot
-        # QUESTION: 這個有要按照選擇的 states 嗎？
         map_fig = go.Figure(create_choromap(
             df, input_name, gender, year[0], year[1]))
         map_fig.update_layout(
