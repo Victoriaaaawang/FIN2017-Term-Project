@@ -27,7 +27,7 @@ def construct_csv(path='./Data', deploy=False):
     # run this if RUN_TIME is zero
     if deploy and (not st.session_state['RUN_TIME']):
         all_files = glob.glob(path + r"/*.TXT")
-        li = []  # 建立一個空的 list
+        li = []  # create a empty list
         for filename in all_files:
             # iterate through each file in the "data" folder that ends with ".TXT"
             df = pd.read_csv(filename, names=[
@@ -53,7 +53,7 @@ df = construct_csv(deploy=DEPLOY)
 
 
 def most_popular_since(year, top: int = 10, states=[]):
-    # 選定最上面有選擇的 statesz``
+    # only include states that is selected above (in "selcect time period" sector)
     region_df = df[df.State.isin(states)]
 
     gender_df = region_df[(region_df['Year'] >= year[0]) & (region_df['Year'] <= year[1])].groupby(['Gender', 'Name']).agg(
@@ -81,7 +81,7 @@ def most_popular_since(year, top: int = 10, states=[]):
                    title=f'Top {top} Popular Boy Names between {year}')
     fig_M.update_traces(marker_color="#3399FF")
 
-    # Keep for thelayout
+    # Keep for the layout
     fig_M.update_layout(
         margin=dict(l=0, r=0, t=40, b=40),
     )
@@ -89,7 +89,7 @@ def most_popular_since(year, top: int = 10, states=[]):
     return fig_F, fig_M
 
 
-# Plot for "Map"
+# Plot the US Map for Specific Name Enterd by User
 def create_choromap(df, name, gender, begin_year, end_year):
     gen = 'F' if gender == 'female' else 'M'
     df_name_state = df[(df['Name'] == name) & (df['Gender'] == gen)]
@@ -154,6 +154,8 @@ def create_choromap(df, name, gender, begin_year, end_year):
     fig = dict(data=data, layout=layout)
     return fig
 
+# Define Trend for Specific Names entered by User
+
 
 def create_graph_time(df, name, color='rgb(255, 153, 204)', year_range=[1910, 2020]):
 
@@ -177,13 +179,15 @@ def create_graph_time(df, name, color='rgb(255, 153, 204)', year_range=[1910, 20
     fig = dict(data=data, layout=layout)
     return fig
 
+# Define Largest Increase and Decrease Names
+
 
 def name_diff_plot(year=[1910, 2020], color_most="#FFCC00", color_least="#FFCC00", states=[]):
     region_df = df[df.State.isin(states)]
     df_pre = region_df[region_df['Year'] == year[0]].groupby('Name').agg(
         {'No. of Occurrences': 'sum'}).reset_index().sort_values(by='Name')
 
-    df_post = region_df[region_df.Year == year[1]].groupby('Name').agg(  # 嘗試不同寫法
+    df_post = region_df[region_df.Year == year[1]].groupby('Name').agg(
         {'No. of Occurrences': 'sum'}).reset_index().sort_values(by='Name')
     new_df = pd.merge(df_pre, df_post, on='Name', how='outer').rename(
         columns={'No. of Occurrences_x': 'count_pre', 'No. of Occurrences_y': 'count_post'})
@@ -213,6 +217,8 @@ def name_diff_plot(year=[1910, 2020], color_most="#FFCC00", color_least="#FFCC00
 
     return fig_most_diff_name, fig_least_diff_name, most_diff_name, least_diff_name
 
+# Define Gender Neutral names
+
 
 def neutral_name(year=[1910, 2020], color_most="#FFCC00", color_least="#FFCC00", states=[]):
     region_df = df[df.State.isin(states)]
@@ -229,7 +235,7 @@ def neutral_name(year=[1910, 2020], color_most="#FFCC00", color_least="#FFCC00",
     final_df = gender_df[gender_df['diff_pct'] <= 0.1]
     final_df['Total'] = final_df['F'] + final_df['M']
 
-    # 生成 wordcloud
+    # Polt wordcloud
     d = {}
     for a, x in final_df[['Name', 'Total']].values:
         d[a] = x
@@ -257,10 +263,10 @@ def main():
     all_flag = st.checkbox("Select all")
 
     if all_flag:
-        states = container.multiselect('Select Region:',
+        states = container.multiselect('Select Region (by States):',
                                        state_lst, state_lst)
     else:
-        states = container.multiselect('Select Region:',
+        states = container.multiselect('Select Region (by States):',
                                        state_lst, ['CA', 'NY'])
 
     year = st.slider(
@@ -271,7 +277,7 @@ def main():
     st.markdown("***")
 
     ### SECTION 1: Popular Names ###
-    st.subheader('Popular Names from Selected Years', anchor=None)
+    st.subheader('Popular Names from Selected Period of Time', anchor=None)
 
     top = st.number_input('Top # Names', min_value=1,
                           max_value=50, value=10, step=1)
@@ -279,15 +285,15 @@ def main():
     col21, col22 = st.columns((5, 5))
 
     fig_F, fig_M = most_popular_since(
-        year=year, top=int(top), states=states)  # 加上 states
+        year=year, top=int(top), states=states)
     with col21:
         st.plotly_chart(fig_F, use_container_width=True)
     with col22:
         st.plotly_chart(fig_M, use_container_width=True)
 
-    ### SECTION 2: Neutral name ###
+    ### SECTION 2: Gender Neutral names ###
 
-    # Plot: Neutral Name Word Cloud
+    # Plot: Gender Neutral Name Word Cloud
     # Plot: Trend
     st.markdown("***")
     st.subheader('Gender Neutral Names', anchor=None)
@@ -299,6 +305,8 @@ def main():
         st.pyplot(nm_fig)
     with col22:
         st.write("Data Table of Selected Neutral Names")
+        st.caption(
+            "Sort out gender netural name by the difference ratio: absolute value of (no. of occurrence of female - no. of occurrence of male) / Total no. of occurrence. Select names with the ratio value less than 0.1 percent and define them as gender netural names.")
         nm_df = nm_df[['Name', 'F', 'M', 'Total']].reset_index(drop=True)
         nm_df[['F', 'M', 'Total']] = nm_df[['F', 'M', 'Total']].astype(int)
         nm_df.columns = ['Name', 'Girl', 'Boy', 'Total Occurrences']
@@ -314,10 +322,12 @@ def main():
         year=year, color_most="#FFCC00", color_least="#FFCC00", states=states)
     col31, _, col32 = st.columns((5, 0.2, 5))
     with col31:
-        st.write(f"#### Most Popular Name {most_diff_name}")
+        st.write(
+            f"#### Name with Biggest Increase (no. of occurrence): {most_diff_name}")
         st.plotly_chart(fig_most_diff_name, use_container_width=True)
     with col32:
-        st.write(f"#### Least Popular Name {least_diff_name}")
+        st.write(
+            f"#### Name with Biggest Decrease (no. of occurrence): {least_diff_name}")
         st.plotly_chart(fig_least_diff_name, use_container_width=True)
 
     ### SECTION 4: Baby Naming Trends for Specific Names ###
