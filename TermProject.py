@@ -298,7 +298,7 @@ def main():
     with col21:
         st.pyplot(nm_fig)
     with col22:
-        st.write("Data Table for selected NNames")
+        st.write("Data Table of Selected Neutral Names")
         nm_df = nm_df[['Name', 'F', 'M', 'Total']].reset_index(drop=True)
         nm_df[['F', 'M', 'Total']] = nm_df[['F', 'M', 'Total']].astype(int)
         nm_df.columns = ['Name', 'Girl', 'Boy', 'Total Occurrences']
