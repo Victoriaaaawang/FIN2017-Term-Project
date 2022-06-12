@@ -6,7 +6,7 @@
 
 + [`Python 3.7`](https://www.python.org/downloads/) or above
 + C++ Compiler in order to run WordCloud successfully
-+ Tested on macOS 12.3.1 (macOS Monetary)
++ Tested on macOS 12.3.1 (macOS Monetary) and Windows 11
 
 ### (Recommended) Virtual Environment 
 
