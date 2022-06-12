@@ -48,7 +48,14 @@ python DataSetup.py
 
 Then on `Line 10`, you may see a `DEPLOY` variable, set it to `False` if you wish to run the dashboard locally.
 
-That's it! You can now run the dashboard locally. Enjoy!
+That's it! You can now run the dashboard locally by running: python
+
+```sh
+streamlit run TermProject.py
+```
+
+Enjoy!
+
 
 
 ## References
